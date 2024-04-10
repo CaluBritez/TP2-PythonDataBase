@@ -1,13 +1,20 @@
 import MySQLdb
-import pandas as pd
+import csv
+import sys
 
-# Leer el archivo CSV usando pandas
+# Leer el archivo CSV utilizando la biblioteca csv
 try:
-    df = pd.read_csv("localidades.csv")
+    with open("localidades.csv", newline='') as archivo_csv:
+        lector_csv = csv.reader(archivo_csv)
+        campos = next(lector_csv)
+        print(campos)
+        # Leer los datos del archivo CSV y almacenarlos en una lista de tuplas
+        datos = [fila for fila in lector_csv]
 except FileNotFoundError:
-    print("No se encontró el archivo localidades.csv.")
-    exit()
+    print("No se encontró el archivo localidades.csv")
+    sys.exit(1)
 
+#Datos para la conexion a la base de datos
 HOST = 'localhost'
 USUARIO = 'root'
 CONTRASENA = ''
@@ -26,5 +33,29 @@ def conectar_mysql(host, usuario, contrasena, base_datos):
         return conexion
     except MySQLdb.Error as error:
         print("Error al conectarse a MySQL:", error)
-        return None
+        sys.exit(1)
+    
+# Comprobar la conexión a la base de datos
+conexion = conectar_mysql(HOST, USUARIO, CONTRASENA, BASE_DATOS)
 
+def crear_tabla(conexion, campos):
+    try:
+        cursor = conexion.cursor()
+        # Crear la tabla con los campos de la lista
+        sql = "CREATE TABLE IF NOT EXISTS localidades ("
+        for campo in campos:
+            sql += f"{campo} VARCHAR(255), "
+    
+        # Eliminar la última coma y espacio
+        sql = sql[:-2]
+        sql += ")"
+        print(sql)
+        cursor.execute(sql)
+        print("Tabla 'localidades' creada correctamente.")
+        conexion.commit()
+        # conexion.close()
+    except MySQLdb.Error as error:
+        print("Error al crear la tabla:", error)
+
+# Crear la tabla en la base de datos con los campos de la lista
+crear_tabla(conexion, campos)
