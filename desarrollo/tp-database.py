@@ -59,3 +59,24 @@ def crear_tabla(conexion, campos):
 
 # Crear la tabla en la base de datos con los campos de la lista
 crear_tabla(conexion, campos)
+
+# Función para insertar los datos en la tabla localidades
+def insertar_datos(conexion, datos):
+    try:
+        cursor = conexion.cursor()
+        # Generar la sentencia INSERT INTO dinámicamente
+        placeholders = ', '.join(['%s'] * len(campos))
+        sql = f"INSERT INTO localidades ({', '.join(campos)}) VALUES ({placeholders})"
+        print(sql)
+        # Ejecutar la sentencia INSERT INTO para insertar los datos en la tabla
+        cursor.executemany(sql, datos)
+        print("Datos insertados correctamente.")
+        conexion.commit()
+    except MySQLdb.Error as error:
+        print("Error al insertar datos:", error)
+
+# Insertar los datos en la tabla localidades
+insertar_datos(conexion, datos)
+
+# Cerrar la conexión a la base de datos MySQL
+conexion.close()
